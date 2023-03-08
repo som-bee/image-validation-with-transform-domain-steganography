@@ -57,15 +57,168 @@ public class TDS {
 
         addSeparator();
 
-        System.out.println("TRANSFORM DOMAIN STEGANOGRAPHY"); 
+        System.out.println("TRANSFORM DOMAIN STEGANOGRAPHY");
         // PERFORMING STEGANOGRAPHY
         // colorArrCover <-- bitArrSecretImg
-        hideBitArrInColorArr(colorArrCover, bitArrSecretImg);
+
+        for (int reg = 1; reg < 4; reg++) {
+            for (int seg = 1; seg <= 4; seg++) {
+                System.out.println("region : " + reg + ", seg:" + seg);
+                ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
+                System.out.println(pixelArr.size());
+
+                 //hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
+
+                updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates, reg, seg);
+
+            }
+        }
+        //
+
+        // getting the bufferd image from color array
+         bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
+        // Saving the modified image
+        try {
+        ImageIO.write(bufferedCoverImage, "png", stegoCover);
+        } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        }
+        System.out.println("Image Steganography Done...");
 
     }
 
-    private static void hideBitArrInColorArr(Integer[][][] colorArrCover, boolean[][][][] bitArrSecretImg) {
+    private static void updateColorArrayFromPixelArray(ArrayList<Integer[][]> pixelArr, Integer[][][] colorArrCover,
+            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates, int reg,
+            int seg) {
 
+        int curColor = 0;
+
+        // segment coordinates
+        int xs = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("start").get("x");
+        int ys = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("start").get("y");
+        int xe = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("x");
+        int ye = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("y");
+        int width = xe - xs + 1;
+        int curIndex=0;
+        for (int y = ys; y <= ye && curIndex<pixelArr.size();) {
+            for (int x = xs; x <= xe && curIndex<pixelArr.size();) {
+                Integer[][] arr = pixelArr.get(curIndex++);
+                colorArrCover[y][x][curColor]=arr[0][0];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return;
+                }
+                colorArrCover[y][x][curColor]=arr[0][1];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return;
+                }
+                colorArrCover[y][x][curColor]=arr[1][0];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return;
+                }
+                colorArrCover[y][x][curColor]=arr[1][1];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return;
+                }
+
+            }
+
+        }
+    }
+
+    private static void hideBitArrInPixelArr(ArrayList<Integer[][]> pixelArr, boolean[][][][] bitArrSecretImg,
+            HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg) {
+
+        int curBit = 0;
+
+
+    }
+
+    private static ArrayList<Integer[][]> getPixelArrayFromSegment(Integer[][][] colorArrCover,
+            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates, int reg,
+            int seg) {
+
+        ArrayList<Integer[][]> pixelArr = new ArrayList<>();
+
+        int curColor = 0;
+
+        // segment coordinates
+        int xs = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("start").get("x");
+        int ys = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("start").get("y");
+        int xe = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("x");
+        int ye = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("y");
+        int width = xe - xs + 1;
+
+        for (int y = ys; y <= ye;) {
+            for (int x = xs; x <= xe;) {
+                int c1 = colorArrCover[y][x][curColor];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return pixelArr;
+                }
+                int c2 = colorArrCover[y][x][curColor];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return pixelArr;
+                }
+                int c3 = colorArrCover[y][x][curColor];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return pixelArr;
+                }
+                int c4 = colorArrCover[y][x][curColor];
+                curColor++;
+                x += curColor / 3;
+                curColor %= 3;
+                y += x / (xe + 1);
+                x = xs + (x % width);
+                if (y > ye) {
+                    return pixelArr;
+                }
+                Integer[][] arr = new Integer[][] { { c1, c2 }, { c3, c4 } };
+
+                pixelArr.add(arr);
+
+            }
+
+        }
+
+        return pixelArr;
+    }
+
+    private static void hideBitArrInColorArr(ArrayList<Integer[][]> pixelArray, boolean[][][][] bitArrSecretImg) {
 
     }
 
