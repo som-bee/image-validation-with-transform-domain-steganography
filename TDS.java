@@ -67,7 +67,7 @@ public class TDS {
                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
                 System.out.println(pixelArr.size());
 
-                 //hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
+                hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
 
                 updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates, reg, seg);
 
@@ -76,13 +76,13 @@ public class TDS {
         //
 
         // getting the bufferd image from color array
-         bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
+        bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
         // Saving the modified image
         try {
-        ImageIO.write(bufferedCoverImage, "png", stegoCover);
+            ImageIO.write(bufferedCoverImage, "png", stegoCover);
         } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         System.out.println("Image Steganography Done...");
 
@@ -100,11 +100,11 @@ public class TDS {
         int xe = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("x");
         int ye = coverCoordinates.get("region-" + reg).get("segment-" + seg).get("end").get("y");
         int width = xe - xs + 1;
-        int curIndex=0;
-        for (int y = ys; y <= ye && curIndex<pixelArr.size();) {
-            for (int x = xs; x <= xe && curIndex<pixelArr.size();) {
+        int curIndex = 0;
+        for (int y = ys; y <= ye && curIndex < pixelArr.size();) {
+            for (int x = xs; x <= xe && curIndex < pixelArr.size();) {
                 Integer[][] arr = pixelArr.get(curIndex++);
-                colorArrCover[y][x][curColor]=arr[0][0];
+                colorArrCover[y][x][curColor] = arr[0][0];
                 curColor++;
                 x += curColor / 3;
                 curColor %= 3;
@@ -113,7 +113,7 @@ public class TDS {
                 if (y > ye) {
                     return;
                 }
-                colorArrCover[y][x][curColor]=arr[0][1];
+                colorArrCover[y][x][curColor] = arr[0][1];
                 curColor++;
                 x += curColor / 3;
                 curColor %= 3;
@@ -122,7 +122,7 @@ public class TDS {
                 if (y > ye) {
                     return;
                 }
-                colorArrCover[y][x][curColor]=arr[1][0];
+                colorArrCover[y][x][curColor] = arr[1][0];
                 curColor++;
                 x += curColor / 3;
                 curColor %= 3;
@@ -131,7 +131,7 @@ public class TDS {
                 if (y > ye) {
                     return;
                 }
-                colorArrCover[y][x][curColor]=arr[1][1];
+                colorArrCover[y][x][curColor] = arr[1][1];
                 curColor++;
                 x += curColor / 3;
                 curColor %= 3;
@@ -149,8 +149,37 @@ public class TDS {
     private static void hideBitArrInPixelArr(ArrayList<Integer[][]> pixelArr, boolean[][][][] bitArrSecretImg,
             HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg) {
 
-        int curBit = 0;
+        for (int frag = 1; frag <= 4; frag++) {
+            int xs = segmentsScrtImg.get("fragment-" + frag).get("start").get("x");
+            int ys = segmentsScrtImg.get("fragment-" + frag).get("start").get("y");
+            int xe = segmentsScrtImg.get("fragment-" + frag).get("end").get("x");
+            int ye = segmentsScrtImg.get("fragment-" + frag).get("end").get("y");
+            int curPixel = 0;
+            for (int y = ys; y <= ye && curPixel < pixelArr.size();y++) {
+                for (int x = xs; x <= xe && curPixel < pixelArr.size();x++) {
+                    for (int color = 0; color < 3; color++) {
+                        for (int bit = 0; bit < 8; bit++) {
+                            int curBit = (bitArrSecretImg[y][x][color][bit]) ? 1 : 0;
+                            int curColor = pixelArr.get(curPixel)[(frag - 1) / 2][(frag - 1) % 2];
 
+                            // lsb
+                            if (curBit == 1) {
+                                curColor = curColor | 1;
+                            } else {
+                                curColor = curColor & 254;
+                            }
+                            //test
+                            //curColor=curBit;
+
+                            pixelArr.get(curPixel)[(frag - 1) / 2][(frag - 1) % 2] = curColor;
+                            curPixel+=1;
+                        }
+                    }
+
+                }
+            }
+
+        }
 
     }
 
