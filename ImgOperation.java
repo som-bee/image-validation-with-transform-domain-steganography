@@ -113,4 +113,46 @@ public class ImgOperation {
         
         return bufferedImage;
     }
+
+    public static BufferedImage getBufferedImageFromBitArray(boolean[][][][] bitArray) {
+        int width = bitArray.length;
+        int height = bitArray[0].length;
+        BufferedImage bufferedImage = new BufferedImage(width, height,
+        BufferedImage.TYPE_INT_RGB);
+       
+       
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+               
+
+            
+                // Retrieving the R G B values
+                int red = getColorFromBitArray(bitArray[y][x][0]);
+                int green = getColorFromBitArray(bitArray[y][x][1]);
+                int blue = getColorFromBitArray(bitArray[y][x][2]);
+                
+
+                // // Creating new Color object
+                Color color = new Color(red, green, blue);
+                // // Setting new Color object to the image
+                bufferedImage.setRGB(x, y, color.getRGB());
+
+            }
+        }
+
+        return bufferedImage;
+    }
+
+    private static int getColorFromBitArray(boolean[] bitArray) {
+
+       int color=0;
+       for(int i = 0; i < bitArray.length; i++) {
+        if(bitArray[i]){
+            color += (int)Math.pow(2, 7-i);
+        }
+       }
+
+        return color;
+    }
 }

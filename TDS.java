@@ -214,18 +214,20 @@ public class TDS {
         for (int curSquare = 0; curSquare < bitMatrixArr.length; curSquare++) {
 
             int a1, a2, a3, a4;
-            a1 = formatColor(pixelArr.get(curPixel)[0][0]);
-            a2 = formatColor(pixelArr.get(curPixel)[0][1]);
-            a3 = formatColor(pixelArr.get(curPixel)[1][0]);
-            a4 = formatColor(pixelArr.get(curPixel)[1][1]);
+            // a1 = formatColor(pixelArr.get(curPixel)[0][0]);
+            // a2 = formatColor(pixelArr.get(curPixel)[0][1]);
+            // a3 = formatColor(pixelArr.get(curPixel)[1][0]);
+            // a4 = formatColor(pixelArr.get(curPixel)[1][1]);
+            a1 = pixelArr.get(curPixel)[0][0];
+            a2 = pixelArr.get(curPixel)[0][1];
+            a3 = pixelArr.get(curPixel)[1][0];
+            a4 = pixelArr.get(curPixel)[1][1];
 
-
-
-            // Use equations to transform a1, a2, a3, a4 to A1’, A2’, A3’ and A4’:
+            // Use equations to forward transform a1, a2, a3, a4 to A1’, A2’, A3’ and A4’:
             // A1’ = (a1+a3)/2 A2’ =(a2+a4)/2
             // A3’ = (a1-a3)/2 A4’ =(a2-a4)/2
             int A1, A2, A3, A4;
-     
+
             A1 = (a1 + a2) / 2;
             A2 = a2;
             A3 = (a3 + a4) / 2;
@@ -237,10 +239,19 @@ public class TDS {
             A4 = getAvgOfBounds(A4, 4);
 
             int R1, R2, R3, R4;
-            R1 = hideBitInColor(bitMatrixArr[curSquare][0][0],A1);
-            R2 = hideBitInColor(bitMatrixArr[curSquare][0][1],A2);
-            R3 = hideBitInColor(bitMatrixArr[curSquare][1][0],A3);
-            R4 = hideBitInColor(bitMatrixArr[curSquare][1][1],A4);
+            R1 = hideBitInColor(bitMatrixArr[curSquare][0][0], A1);
+            R2 = hideBitInColor(bitMatrixArr[curSquare][0][1], A2);
+            R3 = hideBitInColor(bitMatrixArr[curSquare][1][0], A3);
+            R4 = hideBitInColor(bitMatrixArr[curSquare][1][1], A4);
+
+            // reverse transform
+            R1 = 2 * R1 - R2;
+            R3 = 2 * R3 - R4;
+            // formating color for out of bounds
+            R1 = formatColor(R1);
+            R2 = formatColor(R2);
+            R3 = formatColor(R3);
+            R4 = formatColor(R4);
 
             // without forward transformation
             // R1 = hideBitInColor(bitMatrixArr[curSquare][0][0],a1);
@@ -253,27 +264,25 @@ public class TDS {
             pixelArr.get(curPixel)[1][0] = R3;
             pixelArr.get(curPixel)[1][1] = R4;
 
-            //modifyng this will act as matrix interval
-            curPixel += 2;
+            // modifyng this will act as matrix interval
+            curPixel += 1;
         }
     }
 
     private static int formatColor(Integer color) {
-        if(color<1){
-            color += 1;
-        }
-        else if(color>254){
-            color-=1;
+        if (color < 0) {
+            color = 0;
+        } else if (color > 255) {
+            color = 255;
         }
         return color;
     }
 
     private static int hideBitInColor(int bit, int r) {
-        if(bit==1){
-            r+=1;
-        }
-        else{
-            r-=1;
+        if (bit == 1) {
+            r += 1;
+        } else {
+            r -= 1;
         }
         return r;
     }
@@ -349,8 +358,6 @@ public class TDS {
         return pixelArr;
     }
 
-  
-
     // add separator in between console outputs
     private static void addSeparator() {
         System.out.println("#################################################################################");
@@ -358,17 +365,13 @@ public class TDS {
 
     public static void extractSecretImage(File stegoCover, int size) {
 
-
         // SECRET IMAGE
         addSeparator();
         System.out.println("FIGERPRINT IMAGE");
         System.out.println("width: " + size + ", height: " + size);
 
         BufferedImage bufferedSecretImg = new BufferedImage(size, size,
-       BufferedImage.TYPE_INT_RGB);
-        
-        
-        
+                BufferedImage.TYPE_INT_RGB);
 
         boolean[][][][] bitArrSecretImg = new boolean[size][size][3][8];
         System.out.println(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 + " bytes");
@@ -379,67 +382,158 @@ public class TDS {
         System.out.println(Arrays.asList(segmentsScrtImg));
         addSeparator();
 
-         // COVER IAMGE
-         BufferedImage bufferedCoverImage = null;
-         try {
-             bufferedCoverImage = ImageIO.read(stegoCover);
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
- 
-         int widthCover = bufferedCoverImage.getWidth();
-         int heightCover = bufferedCoverImage.getHeight();
- 
-         System.out.println("STEGO COVER IMAGE");
-         System.out.println("width: " + widthCover + ", height: " + heightCover);
-         HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = GenerateCoordinates
-                 .getCoordinatesFromCoverImg(new int[] { 0, 0, widthCover - 1, heightCover - 1 });
-         System.out.println(Arrays.asList(coverCoordinates));
-         Integer[][][] colorArrCover = ImgOperation.getColorArrayFromImage(bufferedCoverImage);
-         // System.out.println(colorArrCover.length+" , "+colorArrCover[0].length);
- 
-         addSeparator();
- 
-         System.out.println("TRANSFORM DOMAIN STEGANOGRAPHY");
-         // PERFORMING STEGANOGRAPHY (EXTRACTING)
-         // colorArrCover --> bitArrSecretImg
- 
-         for (int reg = 1; reg < 4; reg++) {
-             for (int seg = 1; seg <= 4; seg++) {
-                 System.out.println("region : " + reg + ", seg:" + seg);
-                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
-                 System.out.println(pixelArr.size());
+        // COVER IAMGE
+        BufferedImage bufferedCoverImage = null;
+        try {
+            bufferedCoverImage = ImageIO.read(stegoCover);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-                extractBitArrFromPixelArray(pixelArr,bitArrSecretImg, segmentsScrtImg);
-                 //hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
- 
-                 //updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates, reg, seg);
- 
-             }
-         }
-         //
- 
-         // getting the bufferd image from color array
-         bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
-         // Saving the modified image
-         try {
-             ImageIO.write(bufferedCoverImage, "png", stegoCover);
-         } catch (IOException e) {
-             // TODO Auto-generated catch block
-             e.printStackTrace();
-         }
-         System.out.println("Image Steganography Done...");
+        int widthCover = bufferedCoverImage.getWidth();
+        int heightCover = bufferedCoverImage.getHeight();
+
+        System.out.println("STEGO COVER IMAGE");
+        System.out.println("width: " + widthCover + ", height: " + heightCover);
+        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = GenerateCoordinates
+                .getCoordinatesFromCoverImg(new int[] { 0, 0, widthCover - 1, heightCover - 1 });
+        System.out.println(Arrays.asList(coverCoordinates));
+        Integer[][][] colorArrCover = ImgOperation.getColorArrayFromImage(bufferedCoverImage);
+        // System.out.println(colorArrCover.length+" , "+colorArrCover[0].length);
+
+        addSeparator();
+
+        System.out.println("TRANSFORM DOMAIN STEGANOGRAPHY");
+        // PERFORMING STEGANOGRAPHY (EXTRACTING)
+        // colorArrCover --> bitArrSecretImg
+
+        for (int reg = 1; reg < 4; reg++) {
+            for (int seg = 1; seg <= 4; seg++) {
+                System.out.println("region : " + reg + ", seg:" + seg);
+                ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
+                System.out.println(pixelArr.size());
+
+                extractBitArrFromPixelArray(pixelArr, bitArrSecretImg, segmentsScrtImg);
+                // hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
+
+                // updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates,
+                // reg, seg);
+                //boolean[][][][] bitArrSecretImg = ImgOperation.getBitArrayFromImage(bufferedSecretImg);
+                bufferedSecretImg = ImgOperation.getBufferedImageFromBitArray(bitArrSecretImg);
+
+                try {
+                    ImageIO.write(bufferedSecretImg, "png", new File("extracted-assets/secret-reg-"+reg+"seg-"+seg+".png"));
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 
 
+            }
+        }
+        //
 
-
-
-         
+        // getting the bufferd image from color array
+        bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
+        // Saving the modified image
+        try {
+            ImageIO.write(bufferedCoverImage, "png", stegoCover);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println("Image Steganography Done...");
 
     }
 
     private static void extractBitArrFromPixelArray(ArrayList<Integer[][]> pixelArr, boolean[][][][] bitArrSecretImg,
             HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg) {
+
+        int[][][] bitMatrixArr = new int[(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 * 8) / 4][2][2];
+
+        performTDSExtraction(bitMatrixArr, pixelArr);
+
+        for (int frag = 1; frag <= 4; frag++) {
+            int xs = segmentsScrtImg.get("fragment-" + frag).get("start").get("x");
+            int ys = segmentsScrtImg.get("fragment-" + frag).get("start").get("y");
+            int xe = segmentsScrtImg.get("fragment-" + frag).get("end").get("x");
+            int ye = segmentsScrtImg.get("fragment-" + frag).get("end").get("y");
+            int curPosition = 0;
+            for (int y = ys; y <= ye && curPosition < bitMatrixArr.length; y++) {
+                for (int x = xs; x <= xe && curPosition < bitMatrixArr.length; x++) {
+                    for (int color = 0; color < 3; color++) {
+                        for (int bit = 0; bit < 8; bit++) {
+                            bitArrSecretImg[y][x][color][bit] = bitMatrixArr[curPosition++][(frag - 1) / 2][(frag - 1)
+                            % 2] == 1? true : false;
+
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+    }
+
+    private static void performTDSExtraction(int[][][] bitMatrixArr, ArrayList<Integer[][]> pixelArr) {
+        int curPixel = 0;
+
+        for (int curSquare = 0; curSquare < bitMatrixArr.length; curSquare++) {
+
+            int a1, a2, a3, a4;
+            // a1 = formatColor(pixelArr.get(curPixel)[0][0]);
+            // a2 = formatColor(pixelArr.get(curPixel)[0][1]);
+            // a3 = formatColor(pixelArr.get(curPixel)[1][0]);
+            // a4 = formatColor(pixelArr.get(curPixel)[1][1]);
+            a1 = pixelArr.get(curPixel)[0][0];
+            a2 = pixelArr.get(curPixel)[0][1];
+            a3 = pixelArr.get(curPixel)[1][0];
+            a4 = pixelArr.get(curPixel)[1][1];
+
+            // Use equations to forward transform a1, a2, a3, a4 to A1’, A2’, A3’ and A4’:
+            // A1’ = (a1+a3)/2 A2’ =(a2+a4)/2
+            // A3’ = (a1-a3)/2 A4’ =(a2-a4)/2
+            int A1, A2, A3, A4;
+
+            // forward transform
+            A1 = (a1 + a2) / 2;
+            A2 = a2;
+            A3 = (a3 + a4) / 2;
+            A4 = a4;
+
+
+            int R1, R2, R3, R4;
+
+            R1 = getAvgOfBounds(A1, 4);
+            R2 = getAvgOfBounds(A2, 4);
+            R3 = getAvgOfBounds(A3, 4);
+            R4 = getAvgOfBounds(A4, 4);
+
+           
+
+            // reverse transform
+            // R1 = 2 * R1 - R2;
+            // R3 = 2 * R3 - R4;
+            // formating color for out of bounds
+            // R1 = formatColor(R1);
+            // R2 = formatColor(R2);
+            // R3 = formatColor(R3);
+            // R4 = formatColor(R4);
+
+            bitMatrixArr[curSquare][0][0] = A1>=R1 ? 1  : 0;
+            bitMatrixArr[curSquare][0][1] = A2>=R2 ? 1  : 0;
+            bitMatrixArr[curSquare][1][0] = A3>=R3 ? 1  : 0;
+            bitMatrixArr[curSquare][1][1] = A4>=R4 ? 1  : 0;
+
+            // pixelArr.get(curPixel)[0][0] = R1;
+            // pixelArr.get(curPixel)[0][1] = R2;
+            // pixelArr.get(curPixel)[1][0] = R3;
+            // pixelArr.get(curPixel)[1][1] = R4;
+
+            // modifyng this will act as matrix interval
+            curPixel += 1;
+        }
     }
 
 }
