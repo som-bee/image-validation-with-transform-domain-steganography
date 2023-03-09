@@ -17,7 +17,12 @@ public class Main {
 
 
         //hiding the fingerprint file as a secret inside the cover image file using transform domain steganography
-        TDS.addWatermark(coverImg, tPrint, stegoCover);
+        TDS.hideSecretImage(coverImg, tPrint, stegoCover);
+
+
+        //extracting the fingerprint from the stego image file using transform domain steganography
+        int size=32;
+        TDS.extractSecretImage(stegoCover, size);
 
     }
 
