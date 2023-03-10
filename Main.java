@@ -6,7 +6,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         // cover image file
-        File coverImg = new File("cover-img/cover-1024.png");
+        File coverImg = new File("cover-img/cover-e1-1024.png");
 
         // fingerprint file
         int size=52;
@@ -18,7 +18,7 @@ public class Main {
 
 
         //hiding the fingerprint file as a secret inside the cover image file using transform domain steganography
-        //TDS.hideSecretImage(coverImg, tPrint, stegoCover);
+        TDS.hideSecretImage(coverImg, tPrint, stegoCover);
 
 
         //extracting the fingerprint from the stego image file using transform domain steganography
