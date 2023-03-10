@@ -9,7 +9,7 @@ public class Main {
         File coverImg = new File("cover-img/cover-e1-1024.png");
 
         // fingerprint file
-        int size=52;
+        int size=32;
         File tPrint = new File("secret-images/thumb-"+size+"x"+size+".png");
 
 

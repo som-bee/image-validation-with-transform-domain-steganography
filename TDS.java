@@ -11,9 +11,8 @@ import javax.imageio.ImageIO;
 
 public class TDS {
 
-    //
-
-    // Taking cover image and the image file that will be hidden
+    // Taking cover image and the image file that will be hidden and after hiding
+    // storing the stego image
     public static void hideSecretImage(File coverImage, File fPrint, File stegoCover) {
 
         // SECRET IMAGE
@@ -28,7 +27,8 @@ public class TDS {
         int widthSecret = bufferedSecretImg.getWidth();
         int heightSecret = bufferedSecretImg.getHeight();
         System.out.println("width: " + widthSecret + ", height: " + heightSecret);
-
+        // getting the array of individual bits of the secret image
+        // [y-pos][x-pos][3(rgb)][8(8 bit color)]
         boolean[][][][] bitArrSecretImg = ImgOperation.getBitArrayFromImage(bufferedSecretImg);
         System.out.println(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 + " bytes");
 
@@ -69,7 +69,10 @@ public class TDS {
                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
                 System.out.println(pixelArr.size());
 
-                hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
+                int startingFragIndex = 2;
+                int matrixInterval = 2;
+
+                hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg, startingFragIndex, matrixInterval);
 
                 updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates, reg, seg);
 
@@ -149,7 +152,8 @@ public class TDS {
     }
 
     private static void hideBitArrInPixelArr(ArrayList<Integer[][]> pixelArr, boolean[][][][] bitArrSecretImg,
-            HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg) {
+            HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg, int startingFragIndex,
+            int matrixInterval) {
 
         int[][][] bitMatrixArr = new int[(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 * 8) / 4][2][2];
 
@@ -166,21 +170,6 @@ public class TDS {
 
                             bitMatrixArr[curPosition++][(frag - 1) / 2][(frag - 1)
                                     % 2] = (bitArrSecretImg[y][x][color][bit]) ? 1 : 0;
-                            // color manupulation using lsb
-                            // int curBit = (bitArrSecretImg[y][x][color][bit]) ? 1 : 0;
-                            // int curColor = pixelArr.get(curPixel)[(frag - 1) / 2][(frag - 1) % 2];
-
-                            // // lsb
-                            // if (curBit == 1) {
-                            // curColor = curColor | 1;
-                            // } else {
-                            // curColor = curColor & 254;
-                            // }
-                            // // test
-                            // // curColor=curBit;
-
-                            // pixelArr.get(curPixel)[(frag - 1) / 2][(frag - 1) % 2] = curColor;
-                            // curPixel += 1;
                         }
                     }
 
@@ -189,10 +178,11 @@ public class TDS {
 
         }
 
-        performTDS(bitMatrixArr, pixelArr);
+        performTDS(bitMatrixArr, pixelArr, startingFragIndex, matrixInterval);
 
     }
 
+    // Forward Transformations formulas
     /*
      * 1.
      * A1’ = (a1+a2)/2 A2’ = (a1-a2)/2
@@ -208,64 +198,66 @@ public class TDS {
      * 
      */
 
-    private static void performTDS(int[][][] bitMatrixArr, ArrayList<Integer[][]> pixelArr) {
+    private static void performTDS(int[][][] bitMatrixArr, ArrayList<Integer[][]> pixelArr, int startingFragIndex,
+            int matrixInterval) {
         int curPixel = 0;
 
         for (int curSquare = 0; curSquare < bitMatrixArr.length; curSquare++) {
 
-            int a1, a2, a3, a4;
-            // a1 = formatColor(pixelArr.get(curPixel)[0][0]);
-            // a2 = formatColor(pixelArr.get(curPixel)[0][1]);
-            // a3 = formatColor(pixelArr.get(curPixel)[1][0]);
-            // a4 = formatColor(pixelArr.get(curPixel)[1][1]);
-            a1 = pixelArr.get(curPixel)[0][0];
-            a2 = pixelArr.get(curPixel)[0][1];
-            a3 = pixelArr.get(curPixel)[1][0];
-            a4 = pixelArr.get(curPixel)[1][1];
+            int[][] a = new int[2][2];
+
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    a[i][j] = pixelArr.get(curPixel)[i][j];
+
+                }
+            }
 
             // Use equations to forward transform a1, a2, a3, a4 to A1’, A2’, A3’ and A4’:
             // A1’ = (a1+a3)/2 A2’ =(a2+a4)/2
             // A3’ = (a1-a3)/2 A4’ =(a2-a4)/2
-            int A1, A2, A3, A4;
 
-            A1 = (a1 + a2) / 2;
-            A2 = a2;
-            A3 = (a3 + a4) / 2;
-            A4 = a4;
+            int[][] A = new int[2][2];
 
-            A1 = getAvgOfBounds(A1, 4);
-            A2 = getAvgOfBounds(A2, 4);
-            A3 = getAvgOfBounds(A3, 4);
-            A4 = getAvgOfBounds(A4, 4);
+            A[0][0] = (a[0][0] + a[0][1]) / 2;
+            A[0][1] = a[0][1];
+            A[1][0] = (a[1][0] + a[1][1]) / 2;
+            A[1][1] = a[1][1];
 
-            int R1, R2, R3, R4;
-            R1 = hideBitInColor(bitMatrixArr[curSquare][0][0], A1);
-            R2 = hideBitInColor(bitMatrixArr[curSquare][0][1], A2);
-            R3 = hideBitInColor(bitMatrixArr[curSquare][1][0], A3);
-            R4 = hideBitInColor(bitMatrixArr[curSquare][1][1], A4);
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    A[i][j] = getAvgOfBounds(A[i][j], 4);
+
+                }
+            }
+
+            int[][] R = new int[2][2];
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    A[i][j] = getAvgOfBounds(A[i][j], 4);
+                    R[i][j] = hideBitInColor(bitMatrixArr[curSquare][i][j], A[i][j]);
+                }
+            }
 
             // reverse transform
-            R1 = 2 * R1 - R2;
-            R3 = 2 * R3 - R4;
+            R[0][0] = 2 * R[0][0] - R[0][1];
+            R[1][0] = 2 * R[1][0] - R[1][1];
             // formating color for out of bounds
-            R1 = formatColor(R1);
-            R2 = formatColor(R2);
-            R3 = formatColor(R3);
-            R4 = formatColor(R4);
 
-            // without forward transformation
-            // R1 = hideBitInColor(bitMatrixArr[curSquare][0][0],a1);
-            // R2 = hideBitInColor(bitMatrixArr[curSquare][0][1],a2);
-            // R3 = hideBitInColor(bitMatrixArr[curSquare][1][0],a3);
-            // R4 = hideBitInColor(bitMatrixArr[curSquare][1][1],a4);
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    R[i][j] = formatColor(R[i][j]);
+                }
+            }
 
-            pixelArr.get(curPixel)[0][0] = R1;
-            pixelArr.get(curPixel)[0][1] = R2;
-            pixelArr.get(curPixel)[1][0] = R3;
-            pixelArr.get(curPixel)[1][1] = R4;
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    pixelArr.get(curPixel)[i][j] = R[i][j];
+                }
+            }
 
-            // modifyng this will act as matrix interval
-            curPixel += 1;
+            // skipping pixel arrays
+            curPixel += matrixInterval;
         }
     }
 
@@ -413,21 +405,21 @@ public class TDS {
                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
                 System.out.println(pixelArr.size());
 
-                extractBitArrFromPixelArray(pixelArr, bitArrSecretImg, segmentsScrtImg);
-                // hideBitArrInPixelArr(pixelArr, bitArrSecretImg, segmentsScrtImg);
+                int startingFragIndex = 2;
+                int matrixInterval = 2;
 
-                // updateColorArrayFromPixelArray(pixelArr, colorArrCover, coverCoordinates,
-                // reg, seg);
-                //boolean[][][][] bitArrSecretImg = ImgOperation.getBitArrayFromImage(bufferedSecretImg);
+                extractBitArrFromPixelArray(pixelArr, bitArrSecretImg, segmentsScrtImg, startingFragIndex,
+                        matrixInterval);
+
                 bufferedSecretImg = ImgOperation.getBufferedImageFromBitArray(bitArrSecretImg);
 
                 try {
-                    ImageIO.write(bufferedSecretImg, "png", new File("extracted-assets/secret-reg-"+reg+"seg-"+seg+".png"));
+                    ImageIO.write(bufferedSecretImg, "png",
+                            new File("extracted-assets/secret-reg-" + reg + "seg-" + seg + ".png"));
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
 
             }
         }
@@ -442,16 +434,17 @@ public class TDS {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        System.out.println("Image Steganography Done...");
+        System.out.println("Extracted all secret images successfully...");
 
     }
 
     private static void extractBitArrFromPixelArray(ArrayList<Integer[][]> pixelArr, boolean[][][][] bitArrSecretImg,
-            HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg) {
+            HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg, int startingFragIndex,
+            int matrixInterval) {
 
         int[][][] bitMatrixArr = new int[(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 * 8) / 4][2][2];
 
-        performTDSExtraction(bitMatrixArr, pixelArr);
+        performTDSExtraction(bitMatrixArr, pixelArr, startingFragIndex, matrixInterval);
 
         for (int frag = 1; frag <= 4; frag++) {
             int xs = segmentsScrtImg.get("fragment-" + frag).get("start").get("x");
@@ -464,7 +457,7 @@ public class TDS {
                     for (int color = 0; color < 3; color++) {
                         for (int bit = 0; bit < 8; bit++) {
                             bitArrSecretImg[y][x][color][bit] = bitMatrixArr[curPosition++][(frag - 1) / 2][(frag - 1)
-                            % 2] == 1? true : false;
+                                    % 2] == 1 ? true : false;
 
                         }
                     }
@@ -476,63 +469,46 @@ public class TDS {
 
     }
 
-    private static void performTDSExtraction(int[][][] bitMatrixArr, ArrayList<Integer[][]> pixelArr) {
+    private static void performTDSExtraction(int[][][] bitMatrixArr, ArrayList<Integer[][]> pixelArr,
+            int startingFragIndex, int matrixInterval) {
         int curPixel = 0;
 
         for (int curSquare = 0; curSquare < bitMatrixArr.length; curSquare++) {
 
-            int a1, a2, a3, a4;
-            // a1 = formatColor(pixelArr.get(curPixel)[0][0]);
-            // a2 = formatColor(pixelArr.get(curPixel)[0][1]);
-            // a3 = formatColor(pixelArr.get(curPixel)[1][0]);
-            // a4 = formatColor(pixelArr.get(curPixel)[1][1]);
-            a1 = pixelArr.get(curPixel)[0][0];
-            a2 = pixelArr.get(curPixel)[0][1];
-            a3 = pixelArr.get(curPixel)[1][0];
-            a4 = pixelArr.get(curPixel)[1][1];
+            int[][] a = new int[2][2];
 
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    a[i][j] = pixelArr.get(curPixel)[i][j];
+
+                }
+            }
             // Use equations to forward transform a1, a2, a3, a4 to A1’, A2’, A3’ and A4’:
             // A1’ = (a1+a3)/2 A2’ =(a2+a4)/2
             // A3’ = (a1-a3)/2 A4’ =(a2-a4)/2
-            int A1, A2, A3, A4;
+            int[][] A = new int[2][2];
 
-            // forward transform
-            A1 = (a1 + a2) / 2;
-            A2 = a2;
-            A3 = (a3 + a4) / 2;
-            A4 = a4;
+            A[0][0] = (a[0][0] + a[0][1]) / 2;
+            A[0][1] = a[0][1];
+            A[1][0] = (a[1][0] + a[1][1]) / 2;
+            A[1][1] = a[1][1];
 
+            int[][] R = new int[2][2];
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    R[i][j] = getAvgOfBounds(A[i][j], 4);
 
-            int R1, R2, R3, R4;
+                }
+            }
 
-            R1 = getAvgOfBounds(A1, 4);
-            R2 = getAvgOfBounds(A2, 4);
-            R3 = getAvgOfBounds(A3, 4);
-            R4 = getAvgOfBounds(A4, 4);
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    bitMatrixArr[curSquare][i][j] = A[i][j] >= R[i][j] ? 1 : 0;
+                }
+            }
 
-           
-
-            // reverse transform
-            // R1 = 2 * R1 - R2;
-            // R3 = 2 * R3 - R4;
-            // formating color for out of bounds
-            // R1 = formatColor(R1);
-            // R2 = formatColor(R2);
-            // R3 = formatColor(R3);
-            // R4 = formatColor(R4);
-
-            bitMatrixArr[curSquare][0][0] = A1>=R1 ? 1  : 0;
-            bitMatrixArr[curSquare][0][1] = A2>=R2 ? 1  : 0;
-            bitMatrixArr[curSquare][1][0] = A3>=R3 ? 1  : 0;
-            bitMatrixArr[curSquare][1][1] = A4>=R4 ? 1  : 0;
-
-            // pixelArr.get(curPixel)[0][0] = R1;
-            // pixelArr.get(curPixel)[0][1] = R2;
-            // pixelArr.get(curPixel)[1][0] = R3;
-            // pixelArr.get(curPixel)[1][1] = R4;
-
-            // modifyng this will act as matrix interval
-            curPixel += 1;
+            // skipping pixel arrays
+            curPixel += matrixInterval;
         }
     }
 
