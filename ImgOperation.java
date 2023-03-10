@@ -155,4 +155,109 @@ public class ImgOperation {
 
         return color;
     }
+    // getiing all regions
+    public static HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> getCoordinatesFromCoverImg(
+            int[] imgCoordinates) {
+
+        // region no -> segment no -> start/end -> x/y coordinates
+        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> regions = new HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>>();
+
+        int xs = imgCoordinates[0];
+        int ys = imgCoordinates[1];
+        int xe = imgCoordinates[2];
+        int ye = imgCoordinates[3];
+
+        regions.put("region-1", getRegionCoordinates(new int[] { xs, ys, xe / 2, ye / 2 }));
+        regions.put("region-2", getRegionCoordinates(new int[] { xe / 2 + 1, ys, xe, ye / 2 }));
+        regions.put("region-3", getRegionCoordinates(new int[] { xs, ye / 2 + 1, xe / 2, ye }));
+        regions.put("region-4", getRegionCoordinates(new int[] { xe / 2 + 1, ye / 2 + 1, xe, ye }));
+
+        return regions;
+    }
+
+    // getting all segments
+    private static HashMap<String, HashMap<String, HashMap<String, Integer>>> getRegionCoordinates(
+            int[] regionCoordinates) {
+        HashMap<String, HashMap<String, HashMap<String, Integer>>> region = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
+
+        int xs = regionCoordinates[0];
+        int ys = regionCoordinates[1];
+        int xe = regionCoordinates[2];
+        int ye = regionCoordinates[3];
+
+        region.put("segment-1", getSegmentCoordinates(new int[] { xs, ys, xe, ys+(ye-ys)/4 }));
+        region.put("segment-2", getSegmentCoordinates(new int[] { xs, ys+(ye-ys)/4 + 1, xe, ys+(ye-ys)/2 }));
+        region.put("segment-3", getSegmentCoordinates(new int[] { xs, ys+(ye-ys)/2 + 1, xe, ys+((ye-ys) * 3)/4 }));
+        region.put("segment-4", getSegmentCoordinates(new int[] { xs, ys+((ye-ys) * 3)/4 + 1, xe, ye }));
+
+        return region;
+    }
+
+    // getting start and end coordinates
+    private static HashMap<String, HashMap<String, Integer>> getSegmentCoordinates(int[] segmentCoordinates) {
+
+        HashMap<String, HashMap<String, Integer>> segment = new HashMap<String, HashMap<String, Integer>>();
+
+        int xs = segmentCoordinates[0];
+        int ys = segmentCoordinates[1];
+        int xe = segmentCoordinates[2];
+        int ye = segmentCoordinates[3];
+
+        HashMap<String, Integer> start = new HashMap<String, Integer>();
+        start.put("x", xs);
+        start.put("y", ys);
+
+        HashMap<String, Integer> end = new HashMap<String, Integer>();
+        end.put("x", xe);
+        end.put("y", ye);
+
+        segment.put("start", start);
+        segment.put("end", end);
+
+        return segment;
+    }
+    //getting the fragment coordinates of an image
+    // fragment no -> start/end -> x/y coordinates
+    public static HashMap<String, HashMap<String, HashMap<String, Integer>>> generateFragmentCoordinates(BufferedImage bufferedImage) {
+        HashMap<String, HashMap<String, HashMap<String, Integer>>> fragCoordinates = 
+        new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
+        int xs = 0;
+        int ys = 0;
+        int xe = bufferedImage.getWidth()-1;
+        int ye = bufferedImage.getHeight()-1;
+
+        fragCoordinates.put("fragment-1", getFragmentCoordinates(new int[] { xs, ys, xe / 2, ye / 2 }));
+        fragCoordinates.put("fragment-2", getFragmentCoordinates(new int[] { xe / 2 + 1, ys, xe, ye / 2 }));
+        fragCoordinates.put("fragment-3", getFragmentCoordinates(new int[] { xs, ye / 2 + 1, xe / 2, ye }));
+        fragCoordinates.put("fragment-4", getFragmentCoordinates(new int[] { xe / 2 + 1, ye / 2 + 1, xe, ye }));
+
+
+        return fragCoordinates;
+    }
+
+    private static HashMap<String, HashMap<String, Integer>> getFragmentCoordinates(int[] fragCord) {
+        HashMap<String, HashMap<String, Integer>> fragment = new HashMap<String, HashMap<String, Integer>>();
+
+        int xs = fragCord[0];
+        int ys = fragCord[1];
+        int xe = fragCord[2];
+        int ye = fragCord[3];
+
+        HashMap<String, Integer> start = new HashMap<String, Integer>();
+        start.put("x", xs);
+        start.put("y", ys);
+
+        HashMap<String, Integer> end = new HashMap<String, Integer>();
+        end.put("x", xe);
+        end.put("y", ye);
+
+        fragment.put("start", start);
+        fragment.put("end", end);
+
+        return fragment;
+    }
+
+    public static void generateFragment(){
+
+    } 
 }

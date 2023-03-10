@@ -18,6 +18,6 @@ public class Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(Arrays.asList(GenerateFragments.generateFragmentCoordinates(bufferedSecretImg)));
+        System.out.println(Arrays.asList(ImgOperation.generateFragmentCoordinates(bufferedSecretImg)));
     }
 }

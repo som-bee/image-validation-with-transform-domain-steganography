@@ -33,7 +33,7 @@ public class TDS {
         System.out.println(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 + " bytes");
 
         // segmenting the secret image
-        HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg = GenerateFragments
+        HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg = ImgOperation
                 .generateFragmentCoordinates(bufferedSecretImg);
         System.out.println(Arrays.asList(segmentsScrtImg));
         addSeparator();
@@ -51,7 +51,7 @@ public class TDS {
 
         System.out.println("COVER IMAGE");
         System.out.println("width: " + widthCover + ", height: " + heightCover);
-        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = GenerateCoordinates
+        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = ImgOperation
                 .getCoordinatesFromCoverImg(new int[] { 0, 0, widthCover - 1, heightCover - 1 });
         System.out.println(Arrays.asList(coverCoordinates));
         Integer[][][] colorArrCover = ImgOperation.getColorArrayFromImage(bufferedCoverImage);
@@ -369,7 +369,7 @@ public class TDS {
         System.out.println(bitArrSecretImg.length * bitArrSecretImg[0].length * 3 + " bytes");
 
         // segmenting the secret image
-        HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg = GenerateFragments
+        HashMap<String, HashMap<String, HashMap<String, Integer>>> segmentsScrtImg = ImgOperation
                 .generateFragmentCoordinates(bufferedSecretImg);
         System.out.println(Arrays.asList(segmentsScrtImg));
         addSeparator();
@@ -387,7 +387,7 @@ public class TDS {
 
         System.out.println("STEGO COVER IMAGE");
         System.out.println("width: " + widthCover + ", height: " + heightCover);
-        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = GenerateCoordinates
+        HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> coverCoordinates = ImgOperation
                 .getCoordinatesFromCoverImg(new int[] { 0, 0, widthCover - 1, heightCover - 1 });
         System.out.println(Arrays.asList(coverCoordinates));
         Integer[][][] colorArrCover = ImgOperation.getColorArrayFromImage(bufferedCoverImage);
