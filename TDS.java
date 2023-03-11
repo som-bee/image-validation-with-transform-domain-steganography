@@ -63,7 +63,7 @@ public class TDS {
         // PERFORMING STEGANOGRAPHY
         // colorArrCover <-- bitArrSecretImg
 
-        for (int reg = 1; reg < 4; reg++) {
+        for (int reg = 1; reg <= 4; reg++) {
             for (int seg = 1; seg <= 4; seg++) {
                 System.out.println("region : " + reg + ", seg:" + seg);
                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
@@ -399,7 +399,7 @@ public class TDS {
         // PERFORMING STEGANOGRAPHY (EXTRACTING)
         // colorArrCover --> bitArrSecretImg
 
-        for (int reg = 1; reg < 4; reg++) {
+        for (int reg = 1; reg <= 4; reg++) {
             for (int seg = 1; seg <= 4; seg++) {
                 System.out.println("region : " + reg + ", seg:" + seg);
                 ArrayList<Integer[][]> pixelArr = getPixelArrayFromSegment(colorArrCover, coverCoordinates, reg, seg);
@@ -415,7 +415,7 @@ public class TDS {
 
                 try {
                     ImageIO.write(bufferedSecretImg, "png",
-                            new File("extracted-assets/secret-reg-" + reg + "seg-" + seg + ".png"));
+                            new File("extracted-assets/secret-reg-" + reg + "-seg-" + seg + ".png"));
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

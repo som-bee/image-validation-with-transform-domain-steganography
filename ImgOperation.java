@@ -38,7 +38,7 @@ public class ImgOperation {
 
     }
 
-    public static boolean[][][][] getBitArrayFromImage(BufferedImage bufferedImage){
+    public static boolean[][][][] getBitArrayFromImage(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         boolean[][][][] bitArray = new boolean[height][width][3][8];
@@ -54,10 +54,9 @@ public class ImgOperation {
                 int red = color.getRed();
                 int green = color.getGreen();
                 int blue = color.getBlue();
-                bitArray[y][x][0]=getBitArrayFromColor(red);
-                bitArray[y][x][1]=getBitArrayFromColor(green);
-                bitArray[y][x][2]=getBitArrayFromColor(blue);
-                
+                bitArray[y][x][0] = getBitArrayFromColor(red);
+                bitArray[y][x][1] = getBitArrayFromColor(green);
+                bitArray[y][x][2] = getBitArrayFromColor(blue);
 
             }
         }
@@ -65,17 +64,15 @@ public class ImgOperation {
         return bitArray;
     }
 
-
     public static boolean[] getBitArrayFromColor(int color) {
         boolean[] bitArray = new boolean[8];
-        String colorString =Integer.toBinaryString(color);
+        String colorString = Integer.toBinaryString(color);
         int index = 7;
-        for (int i=colorString.length()-1; i>=0; i--) {
-            bitArray[index]=('1'==colorString.charAt(i));
-            //System.out.println(colorArr[index]+" "+colorString.charAt(i));
+        for (int i = colorString.length() - 1; i >= 0; i--) {
+            bitArray[index] = ('1' == colorString.charAt(i));
+            // System.out.println(colorArr[index]+" "+colorString.charAt(i));
             index--;
         }
-
 
         return bitArray;
     }
@@ -86,31 +83,27 @@ public class ImgOperation {
         int height = colorArray.length;
 
         BufferedImage bufferedImage = new BufferedImage(width, height,
-        BufferedImage.TYPE_INT_RGB);
-  
+                BufferedImage.TYPE_INT_RGB);
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 // Retrieving contents of a pixel
                 int pixel = bufferedImage.getRGB(x, y);
 
-                
                 // Retrieving the R G B values
                 int red = colorArray[y][x][0];
                 int green = colorArray[y][x][1];
                 int blue = colorArray[y][x][2];
 
-                 // // Creating new Color object
-                 Color color = new Color(red, green, blue);
+                // // Creating new Color object
+                Color color = new Color(red, green, blue);
 
-
-                  // // Setting new Color object to the image
-                  bufferedImage.setRGB(x, y, color.getRGB());
-
+                // // Setting new Color object to the image
+                bufferedImage.setRGB(x, y, color.getRGB());
 
             }
         }
 
-        
         return bufferedImage;
     }
 
@@ -118,20 +111,15 @@ public class ImgOperation {
         int width = bitArray.length;
         int height = bitArray[0].length;
         BufferedImage bufferedImage = new BufferedImage(width, height,
-        BufferedImage.TYPE_INT_RGB);
-       
-       
+                BufferedImage.TYPE_INT_RGB);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-               
 
-            
                 // Retrieving the R G B values
                 int red = getColorFromBitArray(bitArray[y][x][0]);
                 int green = getColorFromBitArray(bitArray[y][x][1]);
                 int blue = getColorFromBitArray(bitArray[y][x][2]);
-                
 
                 // // Creating new Color object
                 Color color = new Color(red, green, blue);
@@ -146,15 +134,16 @@ public class ImgOperation {
 
     private static int getColorFromBitArray(boolean[] bitArray) {
 
-       int color=0;
-       for(int i = 0; i < bitArray.length; i++) {
-        if(bitArray[i]){
-            color += (int)Math.pow(2, 7-i);
+        int color = 0;
+        for (int i = 0; i < bitArray.length; i++) {
+            if (bitArray[i]) {
+                color += (int) Math.pow(2, 7 - i);
+            }
         }
-       }
 
         return color;
     }
+
     // getiing all regions
     public static HashMap<String, HashMap<String, HashMap<String, HashMap<String, Integer>>>> getCoordinatesFromCoverImg(
             int[] imgCoordinates) {
@@ -185,10 +174,12 @@ public class ImgOperation {
         int xe = regionCoordinates[2];
         int ye = regionCoordinates[3];
 
-        region.put("segment-1", getSegmentCoordinates(new int[] { xs, ys, xe, ys+(ye-ys)/4 }));
-        region.put("segment-2", getSegmentCoordinates(new int[] { xs, ys+(ye-ys)/4 + 1, xe, ys+(ye-ys)/2 }));
-        region.put("segment-3", getSegmentCoordinates(new int[] { xs, ys+(ye-ys)/2 + 1, xe, ys+((ye-ys) * 3)/4 }));
-        region.put("segment-4", getSegmentCoordinates(new int[] { xs, ys+((ye-ys) * 3)/4 + 1, xe, ye }));
+        region.put("segment-1", getSegmentCoordinates(new int[] { xs, ys, xe, ys + (ye - ys) / 4 }));
+        region.put("segment-2",
+                getSegmentCoordinates(new int[] { xs, ys + (ye - ys) / 4 + 1, xe, ys + (ye - ys) / 2 }));
+        region.put("segment-3",
+                getSegmentCoordinates(new int[] { xs, ys + (ye - ys) / 2 + 1, xe, ys + ((ye - ys) * 3) / 4 }));
+        region.put("segment-4", getSegmentCoordinates(new int[] { xs, ys + ((ye - ys) * 3) / 4 + 1, xe, ye }));
 
         return region;
     }
@@ -216,21 +207,21 @@ public class ImgOperation {
 
         return segment;
     }
-    //getting the fragment coordinates of an image
+
+    // getting the fragment coordinates of an image
     // fragment no -> start/end -> x/y coordinates
-    public static HashMap<String, HashMap<String, HashMap<String, Integer>>> generateFragmentCoordinates(BufferedImage bufferedImage) {
-        HashMap<String, HashMap<String, HashMap<String, Integer>>> fragCoordinates = 
-        new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
+    public static HashMap<String, HashMap<String, HashMap<String, Integer>>> generateFragmentCoordinates(
+            BufferedImage bufferedImage) {
+        HashMap<String, HashMap<String, HashMap<String, Integer>>> fragCoordinates = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
         int xs = 0;
         int ys = 0;
-        int xe = bufferedImage.getWidth()-1;
-        int ye = bufferedImage.getHeight()-1;
+        int xe = bufferedImage.getWidth() - 1;
+        int ye = bufferedImage.getHeight() - 1;
 
         fragCoordinates.put("fragment-1", getFragmentCoordinates(new int[] { xs, ys, xe / 2, ye / 2 }));
         fragCoordinates.put("fragment-2", getFragmentCoordinates(new int[] { xe / 2 + 1, ys, xe, ye / 2 }));
         fragCoordinates.put("fragment-3", getFragmentCoordinates(new int[] { xs, ye / 2 + 1, xe / 2, ye }));
         fragCoordinates.put("fragment-4", getFragmentCoordinates(new int[] { xe / 2 + 1, ye / 2 + 1, xe, ye }));
-
 
         return fragCoordinates;
     }
@@ -256,8 +247,4 @@ public class ImgOperation {
 
         return fragment;
     }
-
-    public static void generateFragment(){
-
-    } 
 }
