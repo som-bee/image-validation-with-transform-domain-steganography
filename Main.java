@@ -6,7 +6,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         // cover image file
-        File coverImg = new File("cover-img/cover-e1-1024.png");
+        File coverImg = new File("cover-img/hdfc.png");
 
         // fingerprint file
         int size=32;

@@ -425,15 +425,15 @@ public class TDS {
         }
         //
 
-        // getting the bufferd image from color array
-        bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
-        // Saving the modified image
-        try {
-            ImageIO.write(bufferedCoverImage, "png", stegoCover);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // // getting the bufferd image from color array
+        // bufferedCoverImage = ImgOperation.getImageFromColorArray(colorArrCover);
+        // // Saving the modified image
+        // try {
+        //     ImageIO.write(bufferedCoverImage, "png", stegoCover);
+        // } catch (IOException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
         System.out.println("Extracted all secret images successfully...");
 
     }
